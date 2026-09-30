@@ -219,7 +219,7 @@ btnGenerateCards.addEventListener('click', async () => {
     });
     visitCardsData = await res.json();
 
-    // 關鍵需求：按照攤位表的字母排序（例如 A123, B456, Q6134...）
+    // 依攤位編號字母自然排序（如 A123, B456, Q6134）
     visitCardsData.sort((a, b) => {
       const boothA = (a.booth || "ZZZ").toUpperCase();
       const boothB = (b.booth || "ZZZ").toUpperCase();
@@ -271,24 +271,48 @@ function renderStep3Cards() {
   });
 }
 
-// 一鍵輸出 PDF
-btnExportPDF.addEventListener('click', () => {
-  showLoading('正在產生 PDF，請稍候...');
+// 一鍵輸出 PDF（支援手機系統原生分享與列印存檔）
+btnExportPDF.addEventListener('click', async () => {
+  showLoading('正在準備 PDF 文件...');
+
   const element = document.getElementById('pdfContent');
   const opt = {
     margin: [10, 10, 10, 10],
-    filename: `Semicon_Visit_Cards_${new Date().toISOString().slice(0,10)}.pdf`,
+    filename: `Semicon_Visit_Cards_${new Date().toISOString().slice(0, 10)}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
-  html2pdf().set(opt).from(element).save().then(() => {
+  try {
+    const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
     hideLoading();
-  }).catch(err => {
+
+    const pdfFile = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+
+    // 1. 手機原生檔案分享面板 (iOS / Android 支援度最高，可直接選「儲存到檔案」或分享)
+    if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      await navigator.share({
+        files: [pdfFile],
+        title: 'Semicon 拜訪卡片',
+        text: '這是為您產生的 Semicon 參訪卡片清單。'
+      });
+      return;
+    }
+
+    // 2. 若不支援檔案分享，嘗試以新分頁開啟
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    const newTab = window.open(blobUrl, '_blank');
+    
+    // 3. 若新分頁受限（如 PWA 獨立視窗模式），直接喚起系統列印面板存為 PDF
+    if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+      window.print();
+    }
+  } catch (err) {
     hideLoading();
-    alert('PDF 導出失敗：' + err.message);
-  });
+    console.warn('html2pdf 呼叫失敗，啟用系統原生列印轉 PDF:', err);
+    window.print();
+  }
 });
 
 // 切換步驟

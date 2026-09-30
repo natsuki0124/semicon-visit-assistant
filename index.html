@@ -13,6 +13,29 @@
     body { font-size: 17px; touch-action: manipulation; }
     .star-active { color: #f59e0b; }
     .star-inactive { color: #cbd5e1; }
+
+    /* ===== 手機輸出 PDF / 列印專用樣式 ===== */
+    @media print {
+      header, #step1, #step2, #btnBackToStep2, #btnExportPDF, .no-print {
+        display: none !important;
+      }
+      body, main {
+        background: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      #step3 {
+        display: block !important;
+      }
+      /* 防止卡片在跨頁處被腰斬切割 */
+      #pdfContent > div {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: 1px solid #cbd5e1 !important;
+        margin-bottom: 20px !important;
+        box-shadow: none !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen pb-12 antialiased">
