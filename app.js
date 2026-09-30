@@ -219,7 +219,7 @@ btnGenerateCards.addEventListener('click', async () => {
     });
     visitCardsData = await res.json();
 
-    // 依攤位編號字母自然排序（如 A123, B456, Q6134）
+    // 依攤位編號字母自然排序（例如 A123, B456, Q6134）
     visitCardsData.sort((a, b) => {
       const boothA = (a.booth || "ZZZ").toUpperCase();
       const boothB = (b.booth || "ZZZ").toUpperCase();
@@ -235,7 +235,7 @@ btnGenerateCards.addEventListener('click', async () => {
   }
 });
 
-// 渲染步驟三卡片
+// 渲染步驟三卡片（已更新為：1. 為什麼值得看、2. 我應該看甚麼、3. 我應該問甚麼、4. 最新資訊）
 function renderStep3Cards() {
   pdfContent.innerHTML = '';
   visitCardsData.forEach(card => {
@@ -262,8 +262,8 @@ function renderStep3Cards() {
           <p class="mt-0.5 leading-relaxed whitespace-pre-line">${card.whatAsk || card.whatToAsk}</p>
         </div>
         <div>
-          <span class="font-bold text-slate-900 block text-sm text-blue-700">4. 我應該帶走的資訊：</span>
-          <p class="mt-0.5 leading-relaxed">${card.takeaways}</p>
+          <span class="font-bold text-slate-900 block text-sm text-blue-700">4. 最新資訊：</span>
+          <p class="mt-0.5 leading-relaxed">${card.latestNews || card.takeaways || '暫無最新動態資訊'}</p>
         </div>
       </div>
     `;
